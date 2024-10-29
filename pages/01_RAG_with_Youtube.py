@@ -28,13 +28,19 @@ if "messages" not in st.session_state:
 if "last_url" not in st.session_state:
     st.session_state["last_url"] = None
 
-def extract_video_id(url):
-    if "v=" in url:
-        return url.split("v=")[1].split("&")[0]
-    elif "youtu.be" in url:
-        return url.split("/")[-1]
-    else:
-        return None
+# def extract_video_id(url):
+#     if "v=" in url:
+#         return url.split("v=")[1].split("&")[0]
+#     elif "youtu.be" in url:
+#         return url.split("/")[-1]
+#     else:
+#         return None
+
+def extract_video_id(self, url:str)->str:
+   data = re.findall(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
+   if data:
+       return data[0]
+   return ""
 
 url = st.text_input(
     "채팅에 활용할 YouTube 링크를 입력하세요",
