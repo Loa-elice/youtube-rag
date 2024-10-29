@@ -36,12 +36,6 @@ def extract_video_id(url):
     else:
         return None
 
-url = st.text_input(
-    "채팅에 활용할 YouTube 링크를 입력하세요",
-    "",
-    help="채팅에 사용할 유튜브 링크를 입력하세요 (한글 자막이 있는 경우만 사용 가능합니다)",
-)
-
 def load_from_youtube(input_url):
     try:
         video_id = extract_video_id(input_url)
@@ -91,30 +85,32 @@ def create_chain(retriever):
     )
 
     return RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=False)
+    
+url = st.text_input(
+    "채팅에 활용할 YouTube 링크를 입력하세요",
+    "",
+    help="채팅에 사용할 유튜브 링크를 입력하세요 (한글 자막이 있는 경우만 사용 가능합니다)",
+)
 
-if url:
+docs = load_from_youtube(url)
+if docs:
+    retriever = run_embedding(docs, url)
+    chain = create_chain(retriever)
 
-    docs = load_from_youtube(url)
-    if docs:
-        retriever = run_embedding(docs, url)
-        chain = create_chain(retriever)
+    send_message("유튜브 자막이 처리되었습니다. 질문을 입력해주세요.", "ai", save=False)
 
-        send_message("유튜브 자막이 처리되었습니다. 질문을 입력해주세요.", "ai", save=False)
+    # 유튜브 영상을 접었다 펼 수 있는 Expander 추가
+    with st.expander("YouTube 영상 보기"):
+        video_id = extract_video_id(url)
+        if video_id:
+            st.video(f"https://www.youtube.com/watch?v={video_id}")
 
-        # 유튜브 영상을 접었다 펼 수 있는 Expander 추가
-        with st.expander("YouTube 영상 보기"):
-            video_id = extract_video_id(url)
-            if video_id:
-                st.video(f"https://www.youtube.com/watch?v={video_id}")
+    load_previous_chat()
 
-        load_previous_chat()
+    question = st.chat_input("질문을 입력하세요.")
+    if question:
+        send_message(question, "human")
 
-        question = st.chat_input("질문을 입력하세요.")
-        if question:
-            send_message(question, "human")
+        response = chain.run({"query": question})
+        send_message(response, "ai", save=True)
 
-            response = chain.run({"query": question})
-            send_message(response, "ai", save=True)
-
-else:
-    st.info("유튜브 링크가 입력되면 채팅이 시작됩니다.")
