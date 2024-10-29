@@ -42,17 +42,23 @@ url = st.text_input(
     help="채팅에 사용할 유튜브 링크를 입력하세요 (한글 자막이 있는 경우만 사용 가능합니다)",
 )
 
+# def load_from_youtube(input_url):
+#     try:
+#         video_id = extract_video_id(input_url)
+#         if not video_id:
+#             raise ValueError("올바르지 않은 유튜브 URL입니다.")
+#         loader = YoutubeLoader(video_id, language="ko")
+#         docs = loader.load()
+#         return docs
+#     except Exception as e:
+#         st.error(f"유튜브 자막을 가져오지 못했습니다: {e}")
+#         return None
+
 def load_from_youtube(input_url):
-    try:
-        video_id = extract_video_id(input_url)
-        if not video_id:
-            raise ValueError("올바르지 않은 유튜브 URL입니다.")
-        loader = YoutubeLoader(video_id, language="ko")
-        docs = loader.load()
-        return docs
-    except Exception as e:
-        st.error(f"유튜브 자막을 가져오지 못했습니다: {e}")
-        return None
+    loader = YoutubeLoader(input_url, language="ko")
+    docs = loader.load()
+    return docs
+
 
 def run_embedding(_docs, url):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
