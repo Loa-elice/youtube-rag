@@ -8,6 +8,7 @@ from langchain.document_loaders import YoutubeLoader
 from langchain.prompts.chat import ChatPromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
+import re
 
 load_dotenv()
 api_key = os.environ.get("OPENAI_API_KEY")
