@@ -8,7 +8,6 @@ from langchain.document_loaders import YoutubeLoader
 from langchain.prompts.chat import ChatPromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
-import re
 
 load_dotenv()
 api_key = os.environ.get("OPENAI_API_KEY")
@@ -29,19 +28,13 @@ if "messages" not in st.session_state:
 if "last_url" not in st.session_state:
     st.session_state["last_url"] = None
 
-# def extract_video_id(url):
-#     if "v=" in url:
-#         return url.split("v=")[1].split("&")[0]
-#     elif "youtu.be" in url:
-#         return url.split("/")[-1]
-#     else:
-#         return None
-
-def extract_video_id(url:str)->str:
-   data = re.findall(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
-   if data:
-       return data[0]
-   return ""
+def extract_video_id(url):
+    if "v=" in url:
+        return url.split("v=")[1].split("&")[0]
+    elif "youtu.be" in url:
+        return url.split("/")[-1]
+    else:
+        return None
 
 url = st.text_input(
     "채팅에 활용할 YouTube 링크를 입력하세요",
@@ -49,16 +42,20 @@ url = st.text_input(
     help="채팅에 사용할 유튜브 링크를 입력하세요 (한글 자막이 있는 경우만 사용 가능합니다)",
 )
 
+@st.cache_data(show_spinner="유튜브 자막을 불러오고 있습니다...", max_entries=1)
 def load_from_youtube(input_url):
-    video_id = extract_video_id(input_url)
-    if not video_id:
-        raise ValueError("올바르지 않은 유튜브 URL입니다.")
-    loader = YoutubeLoader(video_id, language="ko")
-    docs = loader.load()
-    return docs
+    try:
+        video_id = extract_video_id(input_url)
+        if not video_id:
+            raise ValueError("올바르지 않은 유튜브 URL입니다.")
+        loader = YoutubeLoader(video_id, language="ko")
+        docs = loader.load()
+        return docs
+    except Exception as e:
+        st.error(f"유튜브 자막을 가져오지 못했습니다: {e}")
+        return None
 
-
-
+@st.cache_resource(show_spinner="임베딩을 생성하고 있습니다...")
 def run_embedding(_docs, url):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     splitted_docs = text_splitter.split_documents(_docs)
