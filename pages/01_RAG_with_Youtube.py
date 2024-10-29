@@ -36,6 +36,12 @@ def extract_video_id(url):
     else:
         return None
 
+url = st.text_input(
+    "채팅에 활용할 YouTube 링크를 입력하세요",
+    "",
+    help="채팅에 사용할 유튜브 링크를 입력하세요 (한글 자막이 있는 경우만 사용 가능합니다)",
+)
+
 def load_from_youtube(input_url):
     try:
         video_id = extract_video_id(input_url)
@@ -86,31 +92,25 @@ def create_chain(retriever):
 
     return RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=False)
 
-
-url = st.text_input(
-    "채팅에 활용할 YouTube 링크를 입력하세요",
-    "",
-    help="채팅에 사용할 유튜브 링크를 입력하세요 (한글 자막이 있는 경우만 사용 가능합니다)",
-)
-
 if url:
 
-# API 키 로드 확인
-st.write("API Key Loaded:", bool(api_key))
+    # API 키 로드 확인
+    st.write("API Key Loaded:", bool(api_key))
+    
+    # URL 입력 검증
+    st.write("Input URL:", url)
+    st.write("Extracted Video ID:", extract_video_id(url))
+    
+    # 자막 로딩 결과 확인
+    docs = load_from_youtube(url)
+    st.write("Loaded Documents:", docs)
+    
+    # 임베딩 생성 확인
+    if docs:
+        retriever = run_embedding(docs, url)
+        st.write("Retriever Created:", bool(retriever))
 
-# URL 입력 검증
-st.write("Input URL:", url)
-st.write("Extracted Video ID:", extract_video_id(url))
-
-# 자막 로딩 결과 확인
-docs = load_from_youtube(url)
-st.write("Loaded Documents:", docs)
-
-# 임베딩 생성 확인
-if docs:
-    retriever = run_embedding(docs, url)
-    st.write("Retriever Created:", bool(retriever))
-
+    
     if st.session_state["last_url"] != url:
         st.session_state["messages"] = []
         st.session_state["last_url"] = url
