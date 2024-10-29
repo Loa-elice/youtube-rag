@@ -42,7 +42,6 @@ url = st.text_input(
     help="채팅에 사용할 유튜브 링크를 입력하세요 (한글 자막이 있는 경우만 사용 가능합니다)",
 )
 
-@st.cache_data(show_spinner="유튜브 자막을 불러오고 있습니다...", max_entries=1)
 def load_from_youtube(input_url):
     try:
         video_id = extract_video_id(input_url)
@@ -55,7 +54,6 @@ def load_from_youtube(input_url):
         st.error(f"유튜브 자막을 가져오지 못했습니다: {e}")
         return None
 
-@st.cache_resource(show_spinner="임베딩을 생성하고 있습니다...")
 def run_embedding(_docs, url):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     splitted_docs = text_splitter.split_documents(_docs)
@@ -95,6 +93,22 @@ def create_chain(retriever):
     return RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=False)
 
 if url:
+    # API 키 로드 확인
+    st.write("API Key Loaded:", bool(api_key))
+    
+    # URL 입력 검증
+    st.write("Input URL:", url)
+    st.write("Extracted Video ID:", extract_video_id(url))
+    
+    # 자막 로딩 결과 확인
+    docs = load_from_youtube(url)
+    st.write("Loaded Documents:", docs)
+    
+    # 임베딩 생성 확인
+    if docs:
+        retriever = run_embedding(docs, url)
+        st.write("Retriever Created:", bool(retriever))
+        
     if st.session_state["last_url"] != url:
         st.session_state["messages"] = []
         st.session_state["last_url"] = url
