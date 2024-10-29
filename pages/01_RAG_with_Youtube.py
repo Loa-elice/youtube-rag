@@ -36,7 +36,7 @@ if "last_url" not in st.session_state:
 #     else:
 #         return None
 
-def extract_video_id(self, url:str)->str:
+def extract_video_id(url:str)->str:
    data = re.findall(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
    if data:
        return data[0]
