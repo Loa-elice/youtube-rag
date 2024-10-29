@@ -85,33 +85,57 @@ def create_chain(retriever):
     )
 
     return RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=False)
-    
+
+
 url = st.text_input(
     "채팅에 활용할 YouTube 링크를 입력하세요",
     "",
     help="채팅에 사용할 유튜브 링크를 입력하세요 (한글 자막이 있는 경우만 사용 가능합니다)",
 )
 
+if url:
+
+# API 키 로드 확인
+st.write("API Key Loaded:", bool(api_key))
+
+# URL 입력 검증
+st.write("Input URL:", url)
+st.write("Extracted Video ID:", extract_video_id(url))
+
+# 자막 로딩 결과 확인
 docs = load_from_youtube(url)
+st.write("Loaded Documents:", docs)
+
+# 임베딩 생성 확인
 if docs:
-    st.write("complete")
     retriever = run_embedding(docs, url)
-    chain = create_chain(retriever)
+    st.write("Retriever Created:", bool(retriever))
 
-    send_message("유튜브 자막이 처리되었습니다. 질문을 입력해주세요.", "ai", save=False)
+    if st.session_state["last_url"] != url:
+        st.session_state["messages"] = []
+        st.session_state["last_url"] = url
 
-    # 유튜브 영상을 접었다 펼 수 있는 Expander 추가
-    with st.expander("YouTube 영상 보기"):
-        video_id = extract_video_id(url)
-        if video_id:
-            st.video(f"https://www.youtube.com/watch?v={video_id}")
+    docs = load_from_youtube(url)
+    if docs:
+        retriever = run_embedding(docs, url)
+        chain = create_chain(retriever)
 
-    load_previous_chat()
+        send_message("유튜브 자막이 처리되었습니다. 질문을 입력해주세요.", "ai", save=False)
 
-    question = st.chat_input("질문을 입력하세요.")
-    if question:
-        send_message(question, "human")
+        # 유튜브 영상을 접었다 펼 수 있는 Expander 추가
+        with st.expander("YouTube 영상 보기"):
+            video_id = extract_video_id(url)
+            if video_id:
+                st.video(f"https://www.youtube.com/watch?v={video_id}")
 
-        response = chain.run({"query": question})
-        send_message(response, "ai", save=True)
+        load_previous_chat()
 
+        question = st.chat_input("질문을 입력하세요.")
+        if question:
+            send_message(question, "human")
+
+            response = chain.run({"query": question})
+            send_message(response, "ai", save=True)
+
+else:
+    st.info("유튜브 링크가 입력되면 채팅이 시작됩니다.")
