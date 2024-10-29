@@ -94,6 +94,7 @@ url = st.text_input(
 
 docs = load_from_youtube(url)
 if docs:
+    st.write("complete")
     retriever = run_embedding(docs, url)
     chain = create_chain(retriever)
 
