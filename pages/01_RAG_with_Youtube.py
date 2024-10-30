@@ -42,7 +42,7 @@ url = st.text_input(
     help="채팅에 사용할 유튜브 링크를 입력하세요 (한글 자막이 있는 경우만 사용 가능합니다)",
 )
 
-@st.cache_data(show_spinner="유튜브 자막을 불러오고 있습니다...", max_entries=1, ttl=600)
+# @st.cache_data(show_spinner="유튜브 자막을 불러오고 있습니다...", max_entries=1, ttl=600)
 def load_from_youtube(input_url):
     try:
         video_id = extract_video_id(input_url)
