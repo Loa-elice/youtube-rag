@@ -50,6 +50,8 @@ def load_from_youtube(input_url):
             raise ValueError("올바르지 않은 유튜브 URL입니다.")
         loader = YoutubeLoader(video_id, language="ko")
         docs = loader.load()
+        if not docs:
+            raise ValueError("자막을 찾을 수 없습니다. 한글 자막이 있는지 확인하세요.")
         return docs
     except Exception as e:
         st.error(f"유튜브 자막을 가져오지 못했습니다: {e}")
