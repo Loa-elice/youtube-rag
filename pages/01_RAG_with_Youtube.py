@@ -110,30 +110,30 @@ if url:
 
     docs = load_from_youtube(url)
 
-# 임베딩 생성 확인
-if docs:
-    retriever = run_embedding(docs, url)
-    st.write("Retriever Created:", bool(retriever))
+    # 임베딩 생성 확인
     if docs:
         retriever = run_embedding(docs, url)
-        chain = create_chain(retriever)
-
-        send_message("유튜브 자막이 처리되었습니다. 질문을 입력해주세요.", "ai", save=False)
-
-        # 유튜브 영상을 접었다 펼 수 있는 Expander 추가
-        with st.expander("YouTube 영상 보기"):
-            video_id = extract_video_id(url)
-            if video_id:
-                st.video(f"https://www.youtube.com/watch?v={video_id}")
-
-        load_previous_chat()
-
-        question = st.chat_input("질문을 입력하세요.")
-        if question:
-            send_message(question, "human")
-
-            response = chain.run({"query": question})
-            send_message(response, "ai", save=True)
+        st.write("Retriever Created:", bool(retriever))
+        if docs:
+            retriever = run_embedding(docs, url)
+            chain = create_chain(retriever)
+    
+            send_message("유튜브 자막이 처리되었습니다. 질문을 입력해주세요.", "ai", save=False)
+    
+            # 유튜브 영상을 접었다 펼 수 있는 Expander 추가
+            with st.expander("YouTube 영상 보기"):
+                video_id = extract_video_id(url)
+                if video_id:
+                    st.video(f"https://www.youtube.com/watch?v={video_id}")
+    
+            load_previous_chat()
+    
+            question = st.chat_input("질문을 입력하세요.")
+            if question:
+                send_message(question, "human")
+    
+                response = chain.run({"query": question})
+                send_message(response, "ai", save=True)
 
 else:
     st.info("유튜브 링크가 입력되면 채팅이 시작됩니다.")
