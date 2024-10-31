@@ -110,17 +110,6 @@ if url:
 
     docs = load_from_youtube(url)
 
-    # API 키 로드 확인
-st.write("API Key Loaded:", bool(api_key))
-
-# URL 입력 검증
-st.write("Input URL:", url)
-st.write("Extracted Video ID:", extract_video_id(url))
-
-# 자막 로딩 결과 확인
-docs = load_from_youtube(url)
-st.write("Loaded Documents:", docs)
-
 # 임베딩 생성 확인
 if docs:
     retriever = run_embedding(docs, url)
